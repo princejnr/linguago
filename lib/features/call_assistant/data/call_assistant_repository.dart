@@ -1,8 +1,12 @@
 import 'models/call_session.dart';
+import 'models/voip_session.dart';
 
 abstract interface class CallAssistantRepository {
   /// Stream emitting real-time telephony call status changes.
   Stream<CallStatus> get callStateStream;
+
+  /// Stream emitting real-time VoIP audio mode status changes.
+  Stream<VoipCallEvent> get voipStream;
 
   /// Stream of quick-reply phrases tapped by the user in the floating overlay.
   Stream<String> get overlayReplyStream;
@@ -28,8 +32,8 @@ abstract interface class CallAssistantRepository {
   /// Request microphone permission.
   Future<bool> requestMicPermission();
 
-  /// Display the floating call assistant overlay.
-  Future<void> showOverlay();
+  /// Display the floating call assistant overlay for a specific call type.
+  Future<void> showOverlay({VoipApp app = VoipApp.cellular});
 
   /// Close the floating overlay.
   Future<void> closeOverlay();
@@ -38,7 +42,11 @@ abstract interface class CallAssistantRepository {
   Future<void> updateOverlaySubtitles({
     required String transcription,
     required String translation,
+    VoipApp app = VoipApp.cellular,
   });
+
+  /// Check if VoIP audio mode is currently active.
+  Future<bool> isVoipActive();
 
   /// Speak a French reply aloud using offline TTS through the speakerphone.
   Future<void> speakFrenchReply(String phrase);

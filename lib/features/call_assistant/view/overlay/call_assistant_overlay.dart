@@ -11,11 +11,82 @@ class CallAssistantOverlay extends StatefulWidget {
 }
 
 class _CallAssistantOverlayState extends State<CallAssistantOverlay> {
-  String _transcription = 'Listening for speech…';
+  String _transcription = 'Listening for French speech…';
   String _translation = 'En attente de parole…';
+  String _app = 'cellular'; // 'cellular', 'whatsapp', 'teams'
   bool _isCollapsed = false;
+  String? _speakingReply;
 
-  static const _quickReplies = [
+  // WhatsApp quick replies (tailored for delivery drivers, Yango, errands)
+  static const _whatsappReplies = [
+    _QuickReplyItem(
+      label: 'Where are you?',
+      frenchPhrase: 'Allô, vous êtes où exactement ?',
+      icon: Icons.location_on_outlined,
+    ),
+    _QuickReplyItem(
+      label: "I'm coming down",
+      frenchPhrase: "J'arrive tout de suite, je descends.",
+      icon: Icons.directions_walk,
+    ),
+    _QuickReplyItem(
+      label: 'Outside the gate',
+      frenchPhrase: 'Je suis dehors devant le portail.',
+      icon: Icons.door_front_door_outlined,
+    ),
+    _QuickReplyItem(
+      label: 'Sending location',
+      frenchPhrase: 'Je vous envoie ma position sur WhatsApp.',
+      icon: Icons.send_and_archive_outlined,
+    ),
+    _QuickReplyItem(
+      label: 'Wait 2 minutes',
+      frenchPhrase: 'Attendez deux minutes s’il vous plaît.',
+      icon: Icons.timer_outlined,
+    ),
+    _QuickReplyItem(
+      label: 'Repeat slowly',
+      frenchPhrase: 'Pouvez-vous répéter plus lentement s’il vous plaît ?',
+      icon: Icons.replay,
+    ),
+  ];
+
+  // Teams quick replies (tailored for remote standups, colleagues, audio checks)
+  static const _teamsReplies = [
+    _QuickReplyItem(
+      label: 'Repeat that?',
+      frenchPhrase: 'Pouvez-vous répéter cette phrase s’il vous plaît ?',
+      icon: Icons.replay,
+    ),
+    _QuickReplyItem(
+      label: 'Mic issue',
+      frenchPhrase: 'Désolé, problème de micro un instant.',
+      icon: Icons.mic_off_outlined,
+    ),
+    _QuickReplyItem(
+      label: 'I agree',
+      frenchPhrase: 'Je suis tout à fait d’accord avec ce point.',
+      icon: Icons.thumb_up_alt_outlined,
+    ),
+    _QuickReplyItem(
+      label: 'Audio breaking up',
+      frenchPhrase: 'Votre voix coupe un peu, vous m’entendez ?',
+      icon: Icons.network_check_outlined,
+    ),
+    _QuickReplyItem(
+      label: 'Taking note',
+      frenchPhrase: 'Bien noté, je m’en occupe tout de suite.',
+      icon: Icons.edit_note,
+    ),
+    _QuickReplyItem(
+      label: 'Thank you',
+      frenchPhrase: 'Très clair, merci beaucoup.',
+      icon: Icons.check_circle_outline,
+    ),
+  ];
+
+  // Cellular / Standard quick replies
+  static const _cellularReplies = [
     _QuickReplyItem(
       label: "I'm coming down",
       frenchPhrase: "J'arrive tout de suite, je descends.",
@@ -38,6 +109,39 @@ class _CallAssistantOverlayState extends State<CallAssistantOverlay> {
     ),
   ];
 
+  List<_QuickReplyItem> get _currentReplies {
+    switch (_app.toLowerCase()) {
+      case 'whatsapp':
+        return _whatsappReplies;
+      case 'teams':
+        return _teamsReplies;
+      default:
+        return _cellularReplies;
+    }
+  }
+
+  Color get _accentColor {
+    switch (_app.toLowerCase()) {
+      case 'whatsapp':
+        return const Color(0xFF25D366); // WhatsApp Green
+      case 'teams':
+        return const Color(0xFF505AC9); // Teams Indigo/Purple
+      default:
+        return const Color(0xFF7C3AED); // Linguago Primary Violet
+    }
+  }
+
+  String get _appBadgeTitle {
+    switch (_app.toLowerCase()) {
+      case 'whatsapp':
+        return '🟢 WHATSAPP LIVE';
+      case 'teams':
+        return '🟣 TEAMS LIVE';
+      default:
+        return '📞 CALL LIVE';
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -47,13 +151,20 @@ class _CallAssistantOverlayState extends State<CallAssistantOverlay> {
           setState(() {
             _transcription = data['transcription'] as String? ?? '';
             _translation = data['translation'] as String? ?? '';
+            if (data['app'] != null) {
+              _app = data['app'] as String;
+            }
+          });
+        } else if (data['type'] == 'app_context') {
+          setState(() {
+            if (data['app'] != null) {
+              _app = data['app'] as String;
+            }
           });
         }
       }
     });
   }
-
-  String? _speakingReply;
 
   Future<void> _setCollapsed(bool collapsed) async {
     setState(() => _isCollapsed = collapsed);
@@ -72,6 +183,7 @@ class _CallAssistantOverlayState extends State<CallAssistantOverlay> {
       'type': 'quick_reply',
       'phrase': item.frenchPhrase,
       'label': item.label,
+      'app': _app,
     });
     Future.delayed(const Duration(seconds: 3), () {
       if (mounted && _speakingReply == item.label) {
@@ -92,17 +204,17 @@ class _CallAssistantOverlayState extends State<CallAssistantOverlay> {
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 250),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E1B4B).withValues(alpha: 0.95), // Deep Indigo / Dark Glass
+              color: const Color(0xFF0F172A).withValues(alpha: 0.96), // Deep Slate Glass
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.4),
-                  blurRadius: 16,
+                  color: Colors.black.withValues(alpha: 0.5),
+                  blurRadius: 18,
                   offset: const Offset(0, 6),
                 ),
               ],
               border: Border.all(
-                color: const Color(0xFF7C3AED).withValues(alpha: 0.4),
+                color: _accentColor.withValues(alpha: 0.55),
                 width: 1.5,
               ),
             ),
@@ -122,15 +234,15 @@ class _CallAssistantOverlayState extends State<CallAssistantOverlay> {
           Container(
             width: 10,
             height: 10,
-            decoration: const BoxDecoration(
-              color: Color(0xFF10B981), // Accent green dot
+            decoration: BoxDecoration(
+              color: _accentColor,
               shape: BoxShape.circle,
             ),
           ),
           const SizedBox(width: 8),
-          const Text(
-            'Linguago Live',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+          Text(
+            _appBadgeTitle,
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
           ),
           const Spacer(),
           IconButton(
@@ -159,18 +271,18 @@ class _CallAssistantOverlayState extends State<CallAssistantOverlay> {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF7C3AED),
+                    color: _accentColor,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Row(
+                  child: Row(
                     children: [
-                      Icon(Icons.translate, color: Colors.white, size: 14),
-                      SizedBox(width: 4),
+                      const Icon(Icons.translate, color: Colors.white, size: 14),
+                      const SizedBox(width: 5),
                       Text(
-                        'FR ➔ EN LIVE',
-                        style: TextStyle(
+                        _appBadgeTitle,
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
@@ -223,8 +335,9 @@ class _CallAssistantOverlayState extends State<CallAssistantOverlay> {
               width: double.infinity,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.35),
+                color: Colors.black.withValues(alpha: 0.4),
                 borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -258,7 +371,7 @@ class _CallAssistantOverlayState extends State<CallAssistantOverlay> {
                         child: Text(
                           _translation,
                           style: const TextStyle(
-                            color: Color(0xFF10B981), // Green highlight
+                            color: Color(0xFF34D399), // Emerald translation
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
                           ),
@@ -272,20 +385,33 @@ class _CallAssistantOverlayState extends State<CallAssistantOverlay> {
             const SizedBox(height: 12),
 
             // ── Quick French Voice Responses ────────────────────────────────
-            const Text(
-              'QUICK FRENCH REPLIES (TAP TO SPEAK ALOUD)',
-              style: TextStyle(
-                color: Colors.white54,
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 0.5,
-              ),
+            Row(
+              children: [
+                Text(
+                  'QUICK FRENCH REPLIES (${_app.toUpperCase()})',
+                  style: const TextStyle(
+                    color: Colors.white54,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const Spacer(),
+                const Text(
+                  'TAP TO SPEAK',
+                  style: TextStyle(
+                    color: Colors.white38,
+                    fontSize: 9,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 8),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
-                children: _quickReplies.map((item) {
+                children: _currentReplies.map((item) {
                   final isCurrentlySpeaking = _speakingReply == item.label;
                   return Padding(
                     padding: const EdgeInsets.only(right: 8),
@@ -305,7 +431,7 @@ class _CallAssistantOverlayState extends State<CallAssistantOverlay> {
                       ),
                       backgroundColor: isCurrentlySpeaking
                           ? const Color(0xFF10B981)
-                          : const Color(0xFF7C3AED).withValues(alpha: 0.6),
+                          : _accentColor.withValues(alpha: 0.7),
                       side: BorderSide.none,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(18),

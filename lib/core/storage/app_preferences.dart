@@ -40,11 +40,23 @@ class AppPreferences {
       _prefs.setBool(_kAutoPlaySpeech, value);
 
   static const _kCallAssistantEnabled = 'call_assistant_enabled';
+  static const _kWhatsAppEnabled = 'whatsapp_call_assistant_enabled';
+  static const _kTeamsEnabled = 'teams_call_assistant_enabled';
 
   bool get isCallAssistantEnabled => _prefs.getBool(_kCallAssistantEnabled) ?? false;
 
   Future<void> setCallAssistantEnabled(bool value) =>
       _prefs.setBool(_kCallAssistantEnabled, value);
+
+  bool get isWhatsAppEnabled => _prefs.getBool(_kWhatsAppEnabled) ?? true;
+
+  Future<void> setWhatsAppEnabled(bool value) =>
+      _prefs.setBool(_kWhatsAppEnabled, value);
+
+  bool get isTeamsEnabled => _prefs.getBool(_kTeamsEnabled) ?? true;
+
+  Future<void> setTeamsEnabled(bool value) =>
+      _prefs.setBool(_kTeamsEnabled, value);
 
   String get sourceLanguageCode => _prefs.getString(_kSourceLanguage) ?? 'en';
 

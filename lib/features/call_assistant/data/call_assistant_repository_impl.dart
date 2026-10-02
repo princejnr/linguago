@@ -12,16 +12,20 @@ import '../../translation/data/translation_output_parser.dart';
 import 'call_assistant_repository.dart';
 import 'datasources/overlay_datasource.dart';
 import 'datasources/telephony_datasource.dart';
+import 'datasources/voip_datasource.dart';
 import 'models/call_session.dart';
+import 'models/voip_session.dart';
 
 final callAssistantRepositoryProvider = Provider<CallAssistantRepository>((ref) {
   final telephony = ref.watch(telephonyDataSourceProvider);
+  final voip = ref.watch(voipDataSourceProvider);
   final overlay = ref.watch(overlayDataSourceProvider);
   final audio = ref.watch(audioDataSourceProvider);
   final gemma = ref.watch(gemmaDataSourceProvider);
   final tts = ref.watch(ttsDataSourceProvider);
   return CallAssistantRepositoryImpl(
     telephony,
+    voip,
     overlay,
     audio,
     gemma,
@@ -32,6 +36,7 @@ final callAssistantRepositoryProvider = Provider<CallAssistantRepository>((ref) 
 class CallAssistantRepositoryImpl implements CallAssistantRepository {
   CallAssistantRepositoryImpl(
     this._telephony,
+    this._voip,
     this._overlay,
     this._audio,
     this._gemma,
@@ -48,6 +53,7 @@ class CallAssistantRepositoryImpl implements CallAssistantRepository {
   }
 
   final TelephonyDataSource _telephony;
+  final VoipDataSource _voip;
   final OverlayDataSource _overlay;
   final AudioDataSource _audio;
   final GemmaDataSource _gemma;
@@ -59,6 +65,9 @@ class CallAssistantRepositoryImpl implements CallAssistantRepository {
 
   @override
   Stream<CallStatus> get callStateStream => _telephony.callStateStream;
+
+  @override
+  Stream<VoipCallEvent> get voipStream => _voip.voipStream;
 
   @override
   Stream<String> get overlayReplyStream => _overlayRepliesController.stream;
@@ -93,7 +102,15 @@ class CallAssistantRepositoryImpl implements CallAssistantRepository {
   }
 
   @override
-  Future<void> showOverlay() => _overlay.showOverlay();
+  Future<void> showOverlay({VoipApp app = VoipApp.cellular}) async {
+    await _overlay.showOverlay();
+    await _overlay.sendToOverlay({
+      'type': 'app_context',
+      'app': app.name,
+      'appName': app.displayName,
+      'shortTag': app.shortTag,
+    });
+  }
 
   @override
   Future<void> closeOverlay() => _overlay.closeOverlay();
@@ -102,14 +119,21 @@ class CallAssistantRepositoryImpl implements CallAssistantRepository {
   Future<void> updateOverlaySubtitles({
     required String transcription,
     required String translation,
+    VoipApp app = VoipApp.cellular,
   }) {
     return _overlay.sendToOverlay({
       'type': 'subtitle',
       'transcription': transcription,
       'translation': translation,
+      'app': app.name,
+      'appName': app.displayName,
+      'shortTag': app.shortTag,
       'timestamp': DateTime.now().millisecondsSinceEpoch,
     });
   }
+
+  @override
+  Future<bool> isVoipActive() => _voip.isVoipActive();
 
   @override
   Future<void> speakFrenchReply(String phrase) async {
