@@ -23,15 +23,44 @@ void main() {
   });
 
   group('CallAssistantState', () {
-    test('areAllPermissionsGranted returns true only when both phone and overlay are granted', () {
-      const state1 = CallAssistantState(hasPhonePermission: true, hasOverlayPermission: false);
+    test('areAllPermissionsGranted returns true only when phone, overlay, and mic are granted', () {
+      const state1 = CallAssistantState(
+        hasPhonePermission: true,
+        hasOverlayPermission: false,
+        hasMicPermission: true,
+      );
       expect(state1.areAllPermissionsGranted, isFalse);
 
-      const state2 = CallAssistantState(hasPhonePermission: false, hasOverlayPermission: true);
+      const state2 = CallAssistantState(
+        hasPhonePermission: false,
+        hasOverlayPermission: true,
+        hasMicPermission: true,
+      );
       expect(state2.areAllPermissionsGranted, isFalse);
 
-      const state3 = CallAssistantState(hasPhonePermission: true, hasOverlayPermission: true);
-      expect(state3.areAllPermissionsGranted, isTrue);
+      const state3 = CallAssistantState(
+        hasPhonePermission: true,
+        hasOverlayPermission: true,
+        hasMicPermission: false,
+      );
+      expect(state3.areAllPermissionsGranted, isFalse);
+
+      const state4 = CallAssistantState(
+        hasPhonePermission: true,
+        hasOverlayPermission: true,
+        hasMicPermission: true,
+      );
+      expect(state4.areAllPermissionsGranted, isTrue);
+    });
+
+    test('state flags track listening and speaking tts correctly', () {
+      const state = CallAssistantState(isListening: true, isSpeakingTts: false);
+      expect(state.isListening, isTrue);
+      expect(state.isSpeakingTts, isFalse);
+
+      final speaking = state.copyWith(isListening: false, isSpeakingTts: true);
+      expect(speaking.isListening, isFalse);
+      expect(speaking.isSpeakingTts, isTrue);
     });
   });
 

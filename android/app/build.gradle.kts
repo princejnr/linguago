@@ -19,8 +19,8 @@ val hasReleaseKeystore = keystoreProperties.getProperty("storeFile") != null
 
 android {
     namespace = "com.juliusboakye.linguago"
-    // flutter_gemma_litertlm requires compileSdk 36.
-    compileSdk = 36
+    // permission_handler_android requires compileSdk 37.
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {

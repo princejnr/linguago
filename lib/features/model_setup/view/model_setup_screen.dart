@@ -46,6 +46,15 @@ class _ModelSetupScreenState extends ConsumerState<ModelSetupScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.backgroundGray,
+      appBar: AppBar(
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_outlined, color: AppColors.primaryPurple),
+            tooltip: 'Settings',
+            onPressed: () => Navigator.of(context).pushNamed(AppRoutes.settings),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 28),

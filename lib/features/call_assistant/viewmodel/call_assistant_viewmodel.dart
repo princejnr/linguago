@@ -38,7 +38,10 @@ class CallAssistantViewModel extends Notifier<CallAssistantState> {
     return initialState;
   }
 
+  bool _isTranscriptionLoopRunning = false;
+
   void _cleanup() {
+    _stopTranscriptionLoop();
     _callStateSub?.cancel();
     _overlayReplySub?.cancel();
   }
@@ -53,10 +56,20 @@ class CallAssistantViewModel extends Notifier<CallAssistantState> {
       }
 
       if (state.isEnabled && state.areAllPermissionsGranted) {
-        if (status == CallStatus.active && !state.isOverlayVisible) {
-          await showOverlay();
-        } else if (status == CallStatus.ended && state.isOverlayVisible) {
-          await closeOverlay();
+        if (status == CallStatus.active) {
+          if (!state.isOverlayVisible) {
+            await showOverlay();
+          }
+          _startTranscriptionLoop();
+        } else if (status == CallStatus.ended || status == CallStatus.idle) {
+          _stopTranscriptionLoop();
+          if (state.isOverlayVisible) {
+            // Give 3 seconds to read final subtitle before closing overlay
+            await Future<void>.delayed(const Duration(seconds: 3));
+            if (state.callStatus == CallStatus.ended || state.callStatus == CallStatus.idle) {
+              await closeOverlay();
+            }
+          }
         }
       }
     });
@@ -64,21 +77,61 @@ class CallAssistantViewModel extends Notifier<CallAssistantState> {
 
   void _listenToOverlayReplies() {
     _overlayReplySub?.cancel();
-    _overlayReplySub = _repository.overlayReplyStream.listen((phrase) {
+    _overlayReplySub = _repository.overlayReplyStream.listen((phrase) async {
       if (kDebugMode) {
         debugPrint('[CallAssistantViewModel] Overlay tapped phrase: $phrase');
       }
-      // Audio playback (TTS) hook for milestone 4
+      state = state.copyWith(isSpeakingTts: true);
+      try {
+        await _repository.speakFrenchReply(phrase);
+      } catch (e) {
+        if (kDebugMode) {
+          debugPrint('[CallAssistantViewModel] Error speaking TTS: $e');
+        }
+      } finally {
+        state = state.copyWith(isSpeakingTts: false);
+      }
     });
   }
 
+  Future<void> _startTranscriptionLoop() async {
+    if (_isTranscriptionLoopRunning) return;
+    _isTranscriptionLoopRunning = true;
+    state = state.copyWith(isListening: true);
+
+    while (_isTranscriptionLoopRunning && state.callStatus == CallStatus.active) {
+      final snippet = await _repository.processSpeechSnippet();
+      if (!_isTranscriptionLoopRunning) break;
+      if (snippet != null && snippet.transcription.trim().isNotEmpty) {
+        state = state.copyWith(
+          currentTranscription: snippet.transcription,
+          currentTranslation: snippet.translation,
+        );
+        await _repository.updateOverlaySubtitles(
+          transcription: snippet.transcription,
+          translation: snippet.translation,
+        );
+      }
+      await Future<void>.delayed(const Duration(milliseconds: 200));
+    }
+
+    _isTranscriptionLoopRunning = false;
+    state = state.copyWith(isListening: false);
+  }
+
+  void _stopTranscriptionLoop() {
+    _isTranscriptionLoopRunning = false;
+    state = state.copyWith(isListening: false);
+  }
+
   Future<void> refreshPermissions() async {
-    final hasPerm = await _repository.checkPermissions();
-    // Also re-query individual permissions for granular UI badges
-    final phone = await ref.read(callAssistantRepositoryProvider).checkPermissions();
+    final phone = await _repository.hasPhonePermission();
+    final overlay = await _repository.hasOverlayPermission();
+    final mic = await _repository.hasMicPermission();
     state = state.copyWith(
       hasPhonePermission: phone,
-      hasOverlayPermission: hasPerm,
+      hasOverlayPermission: overlay,
+      hasMicPermission: mic,
     );
   }
 
@@ -88,6 +141,7 @@ class CallAssistantViewModel extends Notifier<CallAssistantState> {
 
     // If disabled while overlay is active, close it
     if (!enabled && state.isOverlayVisible) {
+      _stopTranscriptionLoop();
       await closeOverlay();
     }
   }
@@ -100,6 +154,11 @@ class CallAssistantViewModel extends Notifier<CallAssistantState> {
   Future<void> requestOverlayPermission() async {
     final granted = await _repository.requestOverlayPermission();
     state = state.copyWith(hasOverlayPermission: granted);
+  }
+
+  Future<void> requestMicPermission() async {
+    final granted = await _repository.requestMicPermission();
+    state = state.copyWith(hasMicPermission: granted);
   }
 
   Future<void> showOverlay() async {
@@ -117,7 +176,9 @@ class CallAssistantViewModel extends Notifier<CallAssistantState> {
     state = state.copyWith(callStatus: status);
     if (status == CallStatus.active) {
       await showOverlay();
+      _startTranscriptionLoop();
     } else if (status == CallStatus.ended) {
+      _stopTranscriptionLoop();
       await closeOverlay();
     }
   }

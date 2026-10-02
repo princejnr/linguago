@@ -53,11 +53,32 @@ class _CallAssistantOverlayState extends State<CallAssistantOverlay> {
     });
   }
 
+  String? _speakingReply;
+
+  Future<void> _setCollapsed(bool collapsed) async {
+    setState(() => _isCollapsed = collapsed);
+    if (collapsed) {
+      await FlutterOverlayWindow.resizeOverlay(WindowSize.matchParent, 160, true);
+    } else {
+      await FlutterOverlayWindow.resizeOverlay(WindowSize.matchParent, 780, true);
+    }
+  }
+
   void _sendQuickReply(_QuickReplyItem item) {
+    setState(() {
+      _speakingReply = item.label;
+    });
     FlutterOverlayWindow.shareData({
       'type': 'quick_reply',
       'phrase': item.frenchPhrase,
       'label': item.label,
+    });
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted && _speakingReply == item.label) {
+        setState(() {
+          _speakingReply = null;
+        });
+      }
     });
   }
 
@@ -114,7 +135,7 @@ class _CallAssistantOverlayState extends State<CallAssistantOverlay> {
           const Spacer(),
           IconButton(
             icon: const Icon(Icons.expand_more, color: Colors.white70, size: 20),
-            onPressed: () => setState(() => _isCollapsed = false),
+            onPressed: () => _setCollapsed(false),
           ),
           IconButton(
             icon: const Icon(Icons.close, color: Colors.white70, size: 20),
@@ -126,141 +147,177 @@ class _CallAssistantOverlayState extends State<CallAssistantOverlay> {
   }
 
   Widget _buildFullCard() {
-    return Padding(
-      padding: const EdgeInsets.all(14),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // ── Header Bar ──────────────────────────────────────────────────
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF7C3AED),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Row(
-                  children: [
-                    Icon(Icons.translate, color: Colors.white, size: 14),
-                    SizedBox(width: 4),
-                    Text(
-                      'FR ➔ EN LIVE',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Spacer(),
-              IconButton(
-                icon: const Icon(Icons.expand_less, color: Colors.white70, size: 20),
-                onPressed: () => setState(() => _isCollapsed = true),
-              ),
-              IconButton(
-                icon: const Icon(Icons.close, color: Colors.white70, size: 20),
-                onPressed: () => FlutterOverlayWindow.closeOverlay(),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-
-          // ── Subtitle Card ───────────────────────────────────────────────
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.35),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ── Header Bar ──────────────────────────────────────────────────
+            Row(
               children: [
-                // Caller's speech (French)
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('🇫🇷 ', style: TextStyle(fontSize: 14)),
-                    Expanded(
-                      child: Text(
-                        _transcription,
-                        style: const TextStyle(
-                          color: Colors.white70,
-                          fontSize: 13,
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                const Divider(color: Colors.white12, height: 1),
-                const SizedBox(height: 8),
-                // Translated subtitle (English)
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('🇬🇧 ', style: TextStyle(fontSize: 14)),
-                    Expanded(
-                      child: Text(
-                        _translation,
-                        style: const TextStyle(
-                          color: Color(0xFF10B981), // Green highlight
-                          fontSize: 15,
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF7C3AED),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.translate, color: Colors.white, size: 14),
+                      SizedBox(width: 4),
+                      Text(
+                        'FR ➔ EN LIVE',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
+                    ],
+                  ),
+                ),
+                if (_speakingReply != null) ...[
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: const Color(0xFF10B981), width: 1),
                     ),
-                  ],
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.volume_up, color: Color(0xFF10B981), size: 12),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Speaking: $_speakingReply',
+                          style: const TextStyle(
+                            color: Color(0xFF10B981),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                const Spacer(),
+                IconButton(
+                  icon: const Icon(Icons.expand_less, color: Colors.white70, size: 20),
+                  onPressed: () => _setCollapsed(true),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white70, size: 20),
+                  onPressed: () => FlutterOverlayWindow.closeOverlay(),
                 ),
               ],
             ),
-          ),
-          const SizedBox(height: 12),
+            const SizedBox(height: 10),
 
-          // ── Quick French Voice Responses ────────────────────────────────
-          const Text(
-            'QUICK FRENCH REPLIES (TAP TO SPEAK ALOUD)',
-            style: TextStyle(
-              color: Colors.white54,
-              fontSize: 10,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 0.5,
-            ),
-          ),
-          const SizedBox(height: 8),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: _quickReplies.map((item) {
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: ActionChip(
-                    avatar: Icon(item.icon, size: 14, color: Colors.white),
-                    label: Text(
-                      item.label,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
+            // ── Subtitle Card ───────────────────────────────────────────────
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.35),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Caller's speech (French)
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('🇫🇷 ', style: TextStyle(fontSize: 14)),
+                      Expanded(
+                        child: Text(
+                          _transcription,
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 13,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
                       ),
-                    ),
-                    backgroundColor: const Color(0xFF7C3AED).withValues(alpha: 0.6),
-                    side: BorderSide.none,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                    onPressed: () => _sendQuickReply(item),
+                    ],
                   ),
-                );
-              }).toList(),
+                  const SizedBox(height: 8),
+                  const Divider(color: Colors.white12, height: 1),
+                  const SizedBox(height: 8),
+                  // Translated subtitle (English)
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('🇬🇧 ', style: TextStyle(fontSize: 14)),
+                      Expanded(
+                        child: Text(
+                          _translation,
+                          style: const TextStyle(
+                            color: Color(0xFF10B981), // Green highlight
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+            const SizedBox(height: 12),
+
+            // ── Quick French Voice Responses ────────────────────────────────
+            const Text(
+              'QUICK FRENCH REPLIES (TAP TO SPEAK ALOUD)',
+              style: TextStyle(
+                color: Colors.white54,
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.5,
+              ),
+            ),
+            const SizedBox(height: 8),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: _quickReplies.map((item) {
+                  final isCurrentlySpeaking = _speakingReply == item.label;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: ActionChip(
+                      avatar: Icon(
+                        isCurrentlySpeaking ? Icons.volume_up : item.icon,
+                        size: 14,
+                        color: Colors.white,
+                      ),
+                      label: Text(
+                        item.label,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      backgroundColor: isCurrentlySpeaking
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFF7C3AED).withValues(alpha: 0.6),
+                      side: BorderSide.none,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      onPressed: () => _sendQuickReply(item),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

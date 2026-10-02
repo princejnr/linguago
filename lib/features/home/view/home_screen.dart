@@ -68,14 +68,13 @@ class HomeScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  // Grayed out Expert Class card
+                  // Call Assistant feature card
                   Expanded(
                     child: _FeatureCard(
-                      color: const Color(0xFFE0E2E7),
-                      label: 'The\nExpert\nClass',
-                      labelColor: const Color(0xFF9CA3AF),
-                      isDisabled: true,
-                      onTap: () {},
+                      color: const Color(0xFF1E1B4B),
+                      label: 'Call\nAssistant\nLive FR',
+                      labelColor: Colors.white,
+                      onTap: () => Navigator.of(context).pushNamed(AppRoutes.callAssistant),
                     ),
                   ),
                 ],
@@ -243,24 +242,22 @@ class _FeatureCard extends StatelessWidget {
     required this.label,
     required this.labelColor,
     required this.onTap,
-    this.isDisabled = false,
   });
 
   final Color color;
   final String label;
   final Color labelColor;
   final VoidCallback onTap;
-  final bool isDisabled;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: isDisabled ? null : onTap,
+      onTap: onTap,
       child: Container(
         width: MediaQuery.sizeOf(context).width * 0.45,
         height: MediaQuery.sizeOf(context).width * 0.50,
         decoration: BoxDecoration(
-          color: isDisabled ? const Color(0xFFE5E7EB) : color,
+          color: color,
           borderRadius: BorderRadius.circular(24),
         ),
         child: Stack(
@@ -280,7 +277,7 @@ class _FeatureCard extends StatelessWidget {
                 ),
               ),
             ),
-            // Arrow / Lock button — bottom-right corner
+            // Arrow button — bottom-right corner
             Positioned(
               bottom: 14,
               right: 14,
@@ -288,22 +285,18 @@ class _FeatureCard extends StatelessWidget {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: isDisabled ? const Color(0xFFD1D5DB) : Colors.black,
+                  color: Colors.black,
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: isDisabled ? const Color(0xFFE5E7EB) : Colors.white,
+                    color: Colors.white,
                     width: 2,
                   ),
                 ),
                 child: Icon(
-                  isDisabled
-                      ? Icons.lock_outline_rounded
-                      : Icons.arrow_outward_rounded,
-                  color: isDisabled
-                      ? const Color(0xFF6B7280)
-                      : (labelColor == Colors.white
-                            ? Colors.white
-                            : Colors.yellow),
+                  Icons.arrow_outward_rounded,
+                  color: labelColor == Colors.white
+                      ? Colors.white
+                      : Colors.yellow,
                   size: 20,
                 ),
               ),

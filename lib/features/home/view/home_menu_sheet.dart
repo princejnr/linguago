@@ -52,6 +52,14 @@ class HomeMenuSheet extends ConsumerWidget {
               ..pushNamed(AppRoutes.translator),
           ),
           ListTile(
+            leading: const Icon(Icons.phone_in_talk_outlined, color: AppColors.primaryPurple),
+            title: const Text('Call Assistant'),
+            subtitle: const Text('Live French call subtitles & overlay'),
+            onTap: () => Navigator.of(context)
+              ..pop()
+              ..pushNamed(AppRoutes.callAssistant),
+          ),
+          ListTile(
             leading: Icon(
               isModelReady ? Icons.check_circle : Icons.hourglass_bottom,
               color: isModelReady ? AppColors.accentGreen : AppColors.highlightYellow,

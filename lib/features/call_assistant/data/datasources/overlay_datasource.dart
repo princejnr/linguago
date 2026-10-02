@@ -21,7 +21,7 @@ class OverlayDataSource {
 
   /// Opens the floating overlay window.
   Future<void> showOverlay({
-    int height = 480,
+    int height = 780,
     int width = WindowSize.matchParent,
   }) async {
     final hasPerm = await hasPermission();
@@ -43,6 +43,13 @@ class OverlayDataSource {
       positionGravity: PositionGravity.auto,
     );
   }
+
+  /// Resizes the overlay dynamically (e.g. collapsing or expanding).
+  Future<void> resizeOverlay({
+    required int width,
+    required int height,
+    bool enableDrag = true,
+  }) => FlutterOverlayWindow.resizeOverlay(width, height, enableDrag);
 
   /// Closes the floating overlay window if open.
   Future<void> closeOverlay() => FlutterOverlayWindow.closeOverlay();

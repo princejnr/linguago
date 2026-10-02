@@ -7,7 +7,16 @@ abstract interface class CallAssistantRepository {
   /// Stream of quick-reply phrases tapped by the user in the floating overlay.
   Stream<String> get overlayReplyStream;
 
-  /// Check whether both phone state and overlay permissions are granted.
+  /// Check whether phone state permission is granted.
+  Future<bool> hasPhonePermission();
+
+  /// Check whether display-over-other-apps permission is granted.
+  Future<bool> hasOverlayPermission();
+
+  /// Check whether microphone recording permission is granted.
+  Future<bool> hasMicPermission();
+
+  /// Check whether all required permissions are granted.
   Future<bool> checkPermissions();
 
   /// Request phone state permission.
@@ -15,6 +24,9 @@ abstract interface class CallAssistantRepository {
 
   /// Request display-over-other-apps permission.
   Future<bool> requestOverlayPermission();
+
+  /// Request microphone permission.
+  Future<bool> requestMicPermission();
 
   /// Display the floating call assistant overlay.
   Future<void> showOverlay();
@@ -26,5 +38,13 @@ abstract interface class CallAssistantRepository {
   Future<void> updateOverlaySubtitles({
     required String transcription,
     required String translation,
+  });
+
+  /// Speak a French reply aloud using offline TTS through the speakerphone.
+  Future<void> speakFrenchReply(String phrase);
+
+  /// Capture a short snippet of caller audio via speakerphone and translate using Gemma 4 E2B.
+  Future<({String transcription, String translation})?> processSpeechSnippet({
+    Duration duration = const Duration(seconds: 4),
   });
 }
