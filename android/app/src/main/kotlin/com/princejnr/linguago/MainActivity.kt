@@ -1,4 +1,4 @@
-package com.juliusboakye.linguago
+package com.princejnr.linguago
 
 import io.flutter.embedding.android.FlutterActivity
 
