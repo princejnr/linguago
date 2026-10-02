@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../features/call_assistant/view/call_assistant_settings_view.dart';
 import '../features/home/view/home_screen.dart';
 import '../features/model_setup/view/model_setup_screen.dart';
 import '../features/onboarding/view/get_started_screen.dart';
@@ -16,6 +17,7 @@ abstract final class AppRoutes {
   static const translator = '/translator';
   static const settings = '/settings';
   static const privacy = '/privacy';
+  static const callAssistant = '/call-assistant';
 }
 
 class AppRouter {
@@ -36,6 +38,8 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const SettingsScreen());
       case AppRoutes.privacy:
         return MaterialPageRoute(builder: (_) => const PrivacyScreen());
+      case AppRoutes.callAssistant:
+        return MaterialPageRoute(builder: (_) => const CallAssistantSettingsView());
       case AppRoutes.getStarted:
       default:
         return MaterialPageRoute(builder: (_) => const GetStartedScreen());

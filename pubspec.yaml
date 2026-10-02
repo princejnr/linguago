@@ -48,6 +48,9 @@ dependencies:
   background_downloader: ^9.5.9
   flutter_tts: ^4.2.5
   shared_preferences: ^2.5.5
+  phone_state: ^4.0.1
+  flutter_overlay_window: ^0.5.0
+  permission_handler: ^13.0.2
 
 dev_dependencies:
   flutter_test:

@@ -31,6 +31,15 @@ class SettingsScreen extends ConsumerWidget {
             onChanged: settingsViewModel.setAutoPlay,
           ),
           const Divider(),
+          const _SectionLabel('Phone Calls (Côte d\'Ivoire)'),
+          ListTile(
+            leading: const Icon(Icons.phone_in_talk, color: AppColors.primaryPurple),
+            title: const Text('Call Assistant'),
+            subtitle: const Text('Live floating subtitles & quick French replies'),
+            trailing: const Icon(Icons.chevron_right_rounded),
+            onTap: () => Navigator.of(context).pushNamed(AppRoutes.callAssistant),
+          ),
+          const Divider(),
           const _SectionLabel('Model'),
           ListTile(
             leading: Icon(

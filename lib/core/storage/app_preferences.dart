@@ -39,6 +39,13 @@ class AppPreferences {
   Future<void> setAutoPlayTranslatedSpeech(bool value) =>
       _prefs.setBool(_kAutoPlaySpeech, value);
 
+  static const _kCallAssistantEnabled = 'call_assistant_enabled';
+
+  bool get isCallAssistantEnabled => _prefs.getBool(_kCallAssistantEnabled) ?? false;
+
+  Future<void> setCallAssistantEnabled(bool value) =>
+      _prefs.setBool(_kCallAssistantEnabled, value);
+
   String get sourceLanguageCode => _prefs.getString(_kSourceLanguage) ?? 'en';
 
   String get targetLanguageCode => _prefs.getString(_kTargetLanguage) ?? 'fr';
