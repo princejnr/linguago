@@ -108,7 +108,7 @@ Verify it's the full **2,588,147,712 bytes** before copying.
 
 ```bash
 adb push gemma-4-E2B-it.litertlm \
-  /sdcard/Android/data/com.juliusboakye.linguago/files/
+  /sdcard/Android/data/com.princejnr.linguago/files/
 ```
 
 **iOS** — install the app first, then:
@@ -117,7 +117,7 @@ adb push gemma-4-E2B-it.litertlm \
 xcrun devicectl device copy to \
   --device <device-id> \
   --domain-type appDataContainer \
-  --domain-identifier com.juliusboakye.linguago \
+  --domain-identifier com.princejnr.linguago \
   --source gemma-4-E2B-it.litertlm \
   --destination Documents/gemma-4-E2B-it.litertlm
 ```

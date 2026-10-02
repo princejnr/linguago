@@ -19,9 +19,9 @@ class VoipDataSource {
     MethodChannel? methodChannel,
     EventChannel? eventChannel,
   })  : _methodChannel = methodChannel ??
-            const MethodChannel('com.juliusboakye.linguago/voip_detector_methods'),
+            const MethodChannel('com.princejnr.linguago/voip_detector_methods'),
         _eventChannel = eventChannel ??
-            const EventChannel('com.juliusboakye.linguago/voip_detector_events') {
+            const EventChannel('com.princejnr.linguago/voip_detector_events') {
     _initStream();
   }
 

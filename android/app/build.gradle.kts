@@ -18,7 +18,7 @@ val keystoreProperties = Properties().apply {
 val hasReleaseKeystore = keystoreProperties.getProperty("storeFile") != null
 
 android {
-    namespace = "com.juliusboakye.linguago"
+    namespace = "com.princejnr.linguago"
     // permission_handler_android requires compileSdk 37.
     compileSdk = 37
     ndkVersion = flutter.ndkVersion
@@ -30,7 +30,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.juliusboakye.linguago"
+        applicationId = "com.princejnr.linguago"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         // flutter_gemma requires minSdk 24.

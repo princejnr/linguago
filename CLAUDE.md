@@ -174,7 +174,7 @@ checks for a hand-copied model before offering the download, and
 # curl -C - DOES resume, unlike the in-app download
 curl -L -C - -o gemma-4-E2B-it.litertlm \
   https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/main/gemma-4-E2B-it.litertlm
-adb push gemma-4-E2B-it.litertlm /sdcard/Android/data/com.juliusboakye.linguago/files/
+adb push gemma-4-E2B-it.litertlm /sdcard/Android/data/com.princejnr.linguago/files/
 ```
 
 On iOS, drag the file into the app's Documents in Finder (`UIFileSharingEnabled`

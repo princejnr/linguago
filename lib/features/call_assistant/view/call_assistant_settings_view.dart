@@ -307,8 +307,8 @@ class CallAssistantSettingsView extends ConsumerWidget {
                           onPressed: () async {
                             await vm.simulateVoipCall(app: VoipApp.teams, active: true);
                             await vm.sendSampleSubtitle(
-                              transcription: 'Bonjour Julius, est-ce que tu peux partager ton écran ?',
-                              translation: 'Hello Julius, could you please share your screen?',
+                              transcription: 'Bonjour Prince, est-ce que tu peux partager ton écran ?',
+                              translation: 'Hello Prince, could you please share your screen?',
                               app: VoipApp.teams,
                             );
                           },

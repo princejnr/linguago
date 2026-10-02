@@ -1,4 +1,4 @@
-package com.juliusboakye.linguago
+package com.princejnr.linguago
 
 import android.content.Context
 import android.media.AudioManager
@@ -11,8 +11,8 @@ import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
-    private val METHOD_CHANNEL = "com.juliusboakye.linguago/voip_detector_methods"
-    private val EVENT_CHANNEL = "com.juliusboakye.linguago/voip_detector_events"
+    private val METHOD_CHANNEL = "com.princejnr.linguago/voip_detector_methods"
+    private val EVENT_CHANNEL = "com.princejnr.linguago/voip_detector_events"
 
     private var eventSink: EventChannel.EventSink? = null
     private var lastMode: Int = AudioManager.MODE_NORMAL
